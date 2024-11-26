@@ -1,0 +1,47 @@
+ENV ?= dev
+ENV_FILE := env/$(ENV).env
+
+COMPOSE_FILES := -f compose/base.yml -f compose/$(ENV).yml
+COMPOSE := docker compose --env-file $(ENV_FILE) $(COMPOSE_FILES)
+
+.PHONY: help env up up-app down ps logs config psql reset
+
+help:
+	@echo "Usage: make <target> [ENV=dev|staging|prod-sim]"
+	@echo "  env        create env/\$$ENV.env from the example"
+	@echo "  up         start backing services"
+	@echo "  up-app     start backing services plus api and web"
+	@echo "  down       stop the environment"
+	@echo "  ps / logs  inspect the environment"
+	@echo "  psql       open a psql shell"
+	@echo "  reset      stop and delete all volumes for the environment"
+
+env:
+	@test -f $(ENV_FILE) || cp env/$(ENV).env.example $(ENV_FILE)
+
+$(ENV_FILE):
+	@echo "Missing $(ENV_FILE). Run: make env ENV=$(ENV)"; exit 1
+
+up: $(ENV_FILE)
+	$(COMPOSE) up -d
+
+up-app: $(ENV_FILE)
+	$(COMPOSE) --profile app up -d --build
+
+down: $(ENV_FILE)
+	$(COMPOSE) --profile app down
+
+ps: $(ENV_FILE)
+	$(COMPOSE) --profile app ps
+
+logs: $(ENV_FILE)
+	$(COMPOSE) --profile app logs -f --tail=100 $(SERVICE)
+
+config: $(ENV_FILE)
+	$(COMPOSE) --profile app config
+
+psql: $(ENV_FILE)
+	$(COMPOSE) exec postgres sh -c 'psql -U $$POSTGRES_USER $$POSTGRES_DB'
+
+reset: $(ENV_FILE)
+	$(COMPOSE) --profile app down -v

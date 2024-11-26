@@ -1,0 +1,8 @@
+# dev: hot reload, small data, no resource limits.
+services:
+  api:
+    build:
+      target: dev
+  web:
+    build:
+      target: dev
