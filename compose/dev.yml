@@ -3,6 +3,10 @@ services:
   api:
     build:
       target: dev
+    volumes:
+      - ../../bazario-api/src:/app/src
   web:
     build:
       target: dev
+    volumes:
+      - ../../bazario-web/src:/app/src
