@@ -1,0 +1,18 @@
+# Fixed CPU and memory caps, shared by staging and prod-sim so results are comparable.
+services:
+  postgres:
+    deploy:
+      resources:
+        limits: { cpus: "2.0", memory: 2g }
+  minio:
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 512m }
+  api:
+    deploy:
+      resources:
+        limits: { cpus: "1.0", memory: 768m }
+  web:
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 256m }

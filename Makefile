@@ -1,7 +1,7 @@
 ENV ?= dev
 ENV_FILE := env/$(ENV).env
 
-COMPOSE_FILES := -f compose/base.yml -f compose/$(ENV).yml
+COMPOSE_FILES := -f compose/base.yml -f compose/$(ENV).yml $(if $(filter dev,$(ENV)),,-f compose/limits.yml)
 COMPOSE := docker compose --env-file $(ENV_FILE) $(COMPOSE_FILES)
 
 .PHONY: help env up up-app down ps logs config psql reset

@@ -1,0 +1,4 @@
+# prod-sim: simulated production with continuous synthetic traffic.
+services:
+  api:
+    restart: always
