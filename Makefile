@@ -4,7 +4,7 @@ ENV_FILE := env/$(ENV).env
 COMPOSE_FILES := -f compose/base.yml -f compose/$(ENV).yml $(if $(filter dev,$(ENV)),,-f compose/limits.yml)
 COMPOSE := docker compose --env-file $(ENV_FILE) $(COMPOSE_FILES)
 
-.PHONY: help env up up-app down ps logs config psql reset
+.PHONY: help env up up-app down ps logs config psql reset deploy rollback
 
 help:
 	@echo "Usage: make <target> [ENV=dev|staging|prod-sim]"
@@ -15,6 +15,8 @@ help:
 	@echo "  ps / logs  inspect the environment"
 	@echo "  psql       open a psql shell"
 	@echo "  reset      stop and delete all volumes for the environment"
+	@echo "  deploy     pull/build, run migrations, restart (TAG=<sha>)"
+	@echo "  rollback   return to the previous deployed tag"
 
 env:
 	@test -f $(ENV_FILE) || cp env/$(ENV).env.example $(ENV_FILE)
@@ -45,3 +47,9 @@ psql: $(ENV_FILE)
 
 reset: $(ENV_FILE)
 	$(COMPOSE) --profile app down -v
+
+deploy: $(ENV_FILE)
+	ENV=$(ENV) TAG=$(TAG) ./scripts/deploy.sh
+
+rollback: $(ENV_FILE)
+	ENV=$(ENV) ./scripts/rollback.sh
