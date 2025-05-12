@@ -16,3 +16,15 @@ services:
     deploy:
       resources:
         limits: { cpus: "0.5", memory: 256m }
+  postgres-exporter:
+    deploy:
+      resources:
+        limits: { cpus: "0.25", memory: 128m }
+  prometheus:
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 768m }
+  grafana:
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 384m }

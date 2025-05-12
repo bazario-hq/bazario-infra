@@ -1,15 +1,17 @@
 ENV ?= dev
 ENV_FILE := env/$(ENV).env
+MONITORING ?= $(if $(filter dev,$(ENV)),0,1)
+PROFILES := $(if $(filter 1,$(MONITORING)),--profile monitoring,)
 
 COMPOSE_FILES := -f compose/base.yml -f compose/$(ENV).yml $(if $(filter dev,$(ENV)),,-f compose/limits.yml)
-COMPOSE := docker compose --env-file $(ENV_FILE) $(COMPOSE_FILES)
+COMPOSE := docker compose --env-file $(ENV_FILE) $(COMPOSE_FILES) $(PROFILES)
 
 .PHONY: help env up up-app down ps logs config psql reset deploy rollback
 
 help:
-	@echo "Usage: make <target> [ENV=dev|staging|prod-sim]"
+	@echo "Usage: make <target> [ENV=dev|staging|prod-sim] [MONITORING=0|1]"
 	@echo "  env        create env/\$$ENV.env from the example"
-	@echo "  up         start backing services"
+	@echo "  up         start backing services (and monitoring for staging/prod-sim)"
 	@echo "  up-app     start backing services plus api and web"
 	@echo "  down       stop the environment"
 	@echo "  ps / logs  inspect the environment"
