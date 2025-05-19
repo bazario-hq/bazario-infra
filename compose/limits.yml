@@ -8,6 +8,10 @@ services:
     deploy:
       resources:
         limits: { cpus: "0.5", memory: 512m }
+  toxiproxy:
+    deploy:
+      resources:
+        limits: { cpus: "0.25", memory: 128m }
   api:
     deploy:
       resources:

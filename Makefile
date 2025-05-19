@@ -6,7 +6,7 @@ PROFILES := $(if $(filter 1,$(MONITORING)),--profile monitoring,)
 COMPOSE_FILES := -f compose/base.yml -f compose/$(ENV).yml $(if $(filter dev,$(ENV)),,-f compose/limits.yml)
 COMPOSE := docker compose --env-file $(ENV_FILE) $(COMPOSE_FILES) $(PROFILES)
 
-.PHONY: help env up up-app down ps logs config psql reset deploy rollback
+.PHONY: help env up up-app down ps logs config psql latency reset deploy rollback
 
 help:
 	@echo "Usage: make <target> [ENV=dev|staging|prod-sim] [MONITORING=0|1]"
@@ -16,6 +16,7 @@ help:
 	@echo "  down       stop the environment"
 	@echo "  ps / logs  inspect the environment"
 	@echo "  psql       open a psql shell"
+	@echo "  latency    add network latency between api and its dependencies (MS=20)"
 	@echo "  reset      stop and delete all volumes for the environment"
 	@echo "  deploy     pull/build, run migrations, restart (TAG=<sha>)"
 	@echo "  rollback   return to the previous deployed tag"
@@ -46,6 +47,9 @@ config: $(ENV_FILE)
 
 psql: $(ENV_FILE)
 	$(COMPOSE) exec postgres sh -c 'psql -U $$POSTGRES_USER $$POSTGRES_DB'
+
+latency: $(ENV_FILE)
+	ENV=$(ENV) ./scripts/toxics.sh $(or $(MS),20)
 
 reset: $(ENV_FILE)
 	$(COMPOSE) --profile app down -v

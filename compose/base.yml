@@ -61,6 +61,19 @@ services:
     entrypoint: ["/bin/sh", "/init.sh"]
     restart: "no"
 
+  toxiproxy:
+    image: ghcr.io/shopify/toxiproxy:2.9.0
+    command: ["-host=0.0.0.0", "-config=/config/toxiproxy.json"]
+    volumes:
+      - ../toxiproxy/toxiproxy.json:/config/toxiproxy.json:ro
+    ports:
+      - "${TOXIPROXY_API_PORT}:8474"
+    depends_on:
+      - postgres
+      - minio
+    logging: *default-logging
+    restart: unless-stopped
+
   api:
     profiles: ["app"]
     build:
@@ -70,9 +83,9 @@ services:
       NODE_ENV: ${NODE_ENV}
       PORT: 3000
       LOG_LEVEL: ${LOG_LEVEL}
-      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@toxiproxy:15432/${POSTGRES_DB}
       DATABASE_POOL_MAX: ${DATABASE_POOL_MAX}
-      S3_ENDPOINT: http://minio:9000
+      S3_ENDPOINT: http://toxiproxy:19000
       S3_ACCESS_KEY: ${MINIO_ROOT_USER}
       S3_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
       S3_BUCKET: ${MINIO_BUCKET}
@@ -86,6 +99,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      toxiproxy:
+        condition: service_started
       minio-init:
         condition: service_completed_successfully
     healthcheck:
