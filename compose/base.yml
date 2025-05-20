@@ -132,6 +132,20 @@ services:
     logging: *default-logging
     restart: unless-stopped
 
+  loadgen:
+    profiles: ["load"]
+    image: grafana/k6:0.54.0
+    environment:
+      BASE_URL: http://api:3000
+      TRAFFIC_MULTIPLIER: ${TRAFFIC_MULTIPLIER}
+      K6_PROMETHEUS_RW_SERVER_URL: http://prometheus:9090/api/v1/write
+    command: ["run", "-o", "experimental-prometheus-rw", "/scenarios/${LOAD_SCENARIO}.js"]
+    volumes:
+      - ../loadgen/scenarios:/scenarios:ro
+    depends_on:
+      - api
+    logging: *default-logging
+
   postgres-exporter:
     profiles: ["monitoring"]
     image: prometheuscommunity/postgres-exporter:v0.15.0
