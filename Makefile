@@ -6,7 +6,7 @@ PROFILES := $(if $(filter 1,$(MONITORING)),--profile monitoring,)
 COMPOSE_FILES := -f compose/base.yml -f compose/$(ENV).yml $(if $(filter dev,$(ENV)),,-f compose/limits.yml)
 COMPOSE := docker compose --env-file $(ENV_FILE) $(COMPOSE_FILES) $(PROFILES)
 
-.PHONY: help env up up-app down ps logs config psql latency reset deploy rollback load
+.PHONY: help env up up-app down ps logs config psql latency reset deploy rollback load validate
 
 help:
 	@echo "Usage: make <target> [ENV=dev|staging|prod-sim] [MONITORING=0|1]"
@@ -21,6 +21,7 @@ help:
 	@echo "  deploy     pull/build, run migrations, restart (TAG=<sha>)"
 	@echo "  rollback   return to the previous deployed tag"
 	@echo "  load       run the k6 load generator"
+	@echo "  validate   check every compose configuration parses"
 
 env:
 	@test -f $(ENV_FILE) || cp env/$(ENV).env.example $(ENV_FILE)
@@ -63,3 +64,9 @@ rollback: $(ENV_FILE)
 
 load: $(ENV_FILE)
 	$(COMPOSE) --profile load up --abort-on-container-exit loadgen
+
+validate:
+	@for e in dev staging prod-sim; do \
+	  echo "== $$e"; \
+	  $(MAKE) -s config ENV=$$e ENV_FILE=env/$$e.env.example >/dev/null || exit 1; \
+	done
