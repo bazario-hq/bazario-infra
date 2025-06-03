@@ -30,6 +30,32 @@ Monitoring (Prometheus, Grafana, Loki, postgres-exporter, cAdvisor) starts autom
 | MinIO console | 9001 | 9101 | 9201 |
 | Mailpit | 8025 | 8125 | 8225 |
 
+## Data
+
+Each environment gets a generated dataset (deterministic, so every copy of staging looks the same):
+
+    make seed ENV=dev          # ~1 min
+    make seed ENV=staging      # ~5 min, mostly product photos
+    make seed ENV=prod-sim     # see below
+
+`make seed` resets the database, runs migrations, loads the data, uploads generated product photos to MinIO and writes `loadgen/data/manifest.<env>.json` for the load generator. It needs the API image, so it builds it first. `make grow ENV=prod-sim STEP=1` adds a growth step (more buyers, products and recent orders) on top of the existing data.
+
+prod-sim is large (hundreds of thousands of products, millions of orders, reviews and notifications). Plan for roughly 15-30 minutes and about 7 GB of disk (database plus photos) on a laptop.
+
+To reset staging to a known state between QA runs:
+
+    make snapshot ENV=staging                    # saves snapshots/staging-<time>.dump
+    make restore ENV=staging FILE=snapshots/staging-<time>.dump
+
+Every seeded account uses the password `bazario-demo` (staff: `admin@bazario.example`, `ops@bazario.example`, `trust@bazario.example`).
+
+## Synthetic traffic
+
+    make load ENV=prod-sim                         # continuous, shaped like a real day
+    make load ENV=staging LOAD_SCENARIO=smoke      # quick end-to-end check
+
+See [loadgen/README.md](loadgen/README.md) for the scenarios and the traffic model.
+
 ## Deploying
 
     make deploy ENV=staging TAG=<commit sha>
@@ -44,6 +70,6 @@ Deploys run pending migrations before restarting the application. Migrations are
     postgres/     server config and init scripts
     monitoring/   Prometheus, Grafana, Loki and Promtail configuration
     toxiproxy/    proxies between the api and its dependencies
-    loadgen/      k6 scenarios
-    scripts/      deploy, rollback and network-latency helpers
+    loadgen/      k6 scenarios and the traffic model
+    scripts/      deploy, rollback, seed, snapshot and network-latency helpers
     docs/         ADRs and runbooks

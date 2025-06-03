@@ -140,10 +140,16 @@ services:
     environment:
       BASE_URL: http://api:3000
       TRAFFIC_MULTIPLIER: ${TRAFFIC_MULTIPLIER}
+      MANIFEST: /loadgen/data/manifest.${LOADGEN_ENV:-dev}.json
+      PROFILE: /loadgen/profile.json
+      DURATION_HOURS: ${DURATION_HOURS:-}
+      DURATION: ${DURATION:-}
+      SIM_START_HOUR: ${SIM_START_HOUR:-}
       K6_PROMETHEUS_RW_SERVER_URL: http://prometheus:9090/api/v1/write
-    command: ["run", "-o", "experimental-prometheus-rw", "/scenarios/${LOAD_SCENARIO}.js"]
+      K6_PROMETHEUS_RW_TREND_STATS: "p(95),p(99),avg"
+    command: ["run", "-o", "experimental-prometheus-rw", "/loadgen/scenarios/${LOAD_SCENARIO}.js"]
     volumes:
-      - ../loadgen/scenarios:/scenarios:ro
+      - ../loadgen:/loadgen:ro
     depends_on:
       - api
     logging: *default-logging
