@@ -28,6 +28,10 @@ services:
     deploy:
       resources:
         limits: { cpus: "0.25", memory: 128m }
+  cadvisor:
+    deploy:
+      resources:
+        limits: { cpus: "0.25", memory: 256m }
   prometheus:
     deploy:
       resources:

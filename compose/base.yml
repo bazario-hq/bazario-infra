@@ -165,6 +165,17 @@ services:
     logging: *default-logging
     restart: unless-stopped
 
+  cadvisor:
+    profiles: ["monitoring"]
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    logging: *default-logging
+    restart: unless-stopped
+
   prometheus:
     profiles: ["monitoring"]
     image: prom/prometheus:v2.55.1
