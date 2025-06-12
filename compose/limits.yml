@@ -36,6 +36,14 @@ services:
     deploy:
       resources:
         limits: { cpus: "0.5", memory: 768m }
+  loki:
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 512m }
+  promtail:
+    deploy:
+      resources:
+        limits: { cpus: "0.25", memory: 128m }
   grafana:
     deploy:
       resources:
