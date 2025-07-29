@@ -25,6 +25,7 @@ show up next to the API metrics in Grafana. The summary prints when the run ends
 | `mixed` | Continuous production traffic: every journey at once, following a daily curve with short bursts |
 | `smoke` | Each journey a few times with one user; a quick check that load generator, data and API agree |
 | `crawler` | A bot walking category listings and product pages |
+| `search` | Search-heavy traffic, including typing into the refine box |
 
 ## Traffic model
 
