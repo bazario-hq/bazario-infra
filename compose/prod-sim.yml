@@ -2,3 +2,5 @@
 services:
   api:
     restart: always
+  web:
+    restart: always
