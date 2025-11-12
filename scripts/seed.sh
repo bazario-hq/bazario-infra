@@ -21,13 +21,13 @@ STEP="${STEP:-}"
 mkdir -p loadgen/data
 
 echo "Starting backing services for ${ENV}"
-compose up -d --wait postgres minio
-compose up minio-init
+compose up -d --wait postgres seaweedfs
+compose up seaweedfs-init
 compose build api
 
 if [ -n "$STEP" ]; then MODE="--grow=${STEP}"; else MODE="--reset"; fi
 
-# Run the seed straight against postgres and minio (not through toxiproxy) and
+# Run the seed straight against postgres and object storage (not through toxiproxy) and
 # outside the api container's CPU/memory caps, so it finishes in minutes.
 started=$(date +%s)
 docker run --rm \
@@ -37,10 +37,10 @@ docker run --rm \
   -e NODE_ENV=production \
   -e LOG_LEVEL=warn \
   -e "DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}" \
-  -e S3_ENDPOINT=http://minio:9000 \
-  -e "S3_ACCESS_KEY=${MINIO_ROOT_USER}" \
-  -e "S3_SECRET_KEY=${MINIO_ROOT_PASSWORD}" \
-  -e "S3_BUCKET=${MINIO_BUCKET}" \
+  -e S3_ENDPOINT=http://seaweedfs:8333 \
+  -e "S3_ACCESS_KEY=${S3_ACCESS_KEY}" \
+  -e "S3_SECRET_KEY=${S3_SECRET_KEY}" \
+  -e "S3_BUCKET=${S3_BUCKET}" \
   -e S3_FORCE_PATH_STYLE=true \
   "bazario-api:${API_TAG}" \
   node dist/seed/index.js --size="$SIZE" $MODE --manifest="/seed-out/manifest.${ENV}.json" ${SEED_ARGS:-}

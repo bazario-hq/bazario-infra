@@ -28,7 +28,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: shellcheck
-        run: shellcheck --severity=warning scripts/*.sh minio/*.sh
+        run: shellcheck --severity=warning scripts/*.sh seaweedfs/*.sh
 
   monitoring:
     runs-on: ubuntu-latest
