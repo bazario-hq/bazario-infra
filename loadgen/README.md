@@ -16,6 +16,7 @@ environment needs a dataset and its manifest:
     make load ENV=prod-sim                                  # mixed traffic, 24 h
     make load ENV=prod-sim TRAFFIC_MULTIPLIER=3             # a busy day
     make load ENV=staging LOAD_SCENARIO=smoke               # every journey a few times
+    make load ENV=staging LOAD_SCENARIO=flash-sale
     make load ENV=staging LOAD_SCENARIO=month-end DURATION=15m
 
 k6 results stream to Prometheus (`k6_*` metrics) in staging and prod-sim and
@@ -25,6 +26,7 @@ show up next to the API metrics in Grafana. The summary prints when the run ends
 | --- | --- |
 | `mixed` | Continuous production traffic: every journey at once, following a daily curve with short bursts |
 | `smoke` | Each journey a few times with one user; a quick check that load generator, data and API agree |
+| `flash-sale` | A promotion: many buyers checking out the same products at the same moment |
 | `login-burst` | A marketing email: a wave of sign-ins while browsing continues |
 | `crawler` | A bot walking category listings and product pages |
 | `month-end` | Big sellers watching month-to-date numbers while finance pulls quarter exports |
