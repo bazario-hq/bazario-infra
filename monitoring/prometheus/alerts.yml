@@ -8,12 +8,26 @@ groups:
         annotations:
           summary: "API p95 latency above 1s"
           runbook: "docs/runbooks/api-latency.md"
+      - alert: ApiHighLatencyP99
+        expr: histogram_quantile(0.99, sum by (le) (rate(http_request_duration_seconds_bucket{job="api"}[1m]))) > 1
+        for: 1m
+        labels: { severity: warning }
+        annotations:
+          summary: "API p99 latency above 1s"
+          runbook: "docs/runbooks/api-latency.md"
       - alert: ApiHighErrorRate
         expr: sum(rate(http_requests_total{job="api",status=~"5.."}[5m])) / sum(rate(http_requests_total{job="api"}[5m])) > 0.02
         for: 5m
         labels: { severity: critical }
         annotations:
           summary: "API 5xx rate above 2%"
+          runbook: "docs/runbooks/api-errors.md"
+      - alert: CheckoutErrorRateHigh
+        expr: sum(rate(http_requests_total{job="api",route="/api/checkout/confirm",status=~"5.."}[5m])) / sum(rate(http_requests_total{job="api",route="/api/checkout/confirm"}[5m])) > 0.02
+        for: 2m
+        labels: { severity: critical }
+        annotations:
+          summary: "Checkout confirm 5xx rate above 2%"
           runbook: "docs/runbooks/api-errors.md"
       - alert: ApiDown
         expr: up{job="api"} == 0
@@ -30,6 +44,17 @@ groups:
         annotations:
           summary: "Postgres connections above 80"
           runbook: "docs/runbooks/db-connections.md"
+      - alert: PostgresCpuHigh
+        expr: |
+          sum by (name) (rate(container_cpu_usage_seconds_total{name=~".+-postgres-[0-9]+"}[5m]))
+            / on (name) (container_spec_cpu_quota{name=~".+-postgres-[0-9]+"} / container_spec_cpu_period{name=~".+-postgres-[0-9]+"})
+            > 0.9
+          and on (name) container_spec_cpu_quota{name=~".+-postgres-[0-9]+"} > 0
+        for: 10m
+        labels: { severity: warning }
+        annotations:
+          summary: "Postgres container CPU above 90% of its limit"
+          runbook: "docs/runbooks/postgres-cpu.md"
   - name: bazario-containers
     rules:
       - alert: ContainerMemoryNearLimit
