@@ -10,6 +10,7 @@ cd "$(dirname "$0")/.."
 . ./scripts/_common.sh
 
 [ -f "$ENV_FILE" ] || { echo "Missing $ENV_FILE (run: make env ENV=$ENV)" >&2; exit 1; }
+# shellcheck source=/dev/null
 set -a; . "./$ENV_FILE"; set +a
 mkdir -p snapshots
 

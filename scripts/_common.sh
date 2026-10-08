@@ -5,6 +5,7 @@ set -eu
 ENV="${ENV:-dev}"
 ENV_FILE="env/${ENV}.env"
 STATE_DIR=".deploy"
+# shellcheck disable=SC2034  # used by deploy.sh and rollback.sh
 HISTORY="${STATE_DIR}/${ENV}.history"
 
 mkdir -p "$STATE_DIR"
