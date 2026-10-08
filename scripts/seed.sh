@@ -11,8 +11,10 @@ cd "$(dirname "$0")/.."
 . ./scripts/_common.sh
 
 [ -f "$ENV_FILE" ] || { echo "Missing $ENV_FILE (run: make env ENV=$ENV)" >&2; exit 1; }
+set -a
 # shellcheck source=/dev/null
-set -a; . "./$ENV_FILE"; set +a
+. "./$ENV_FILE"
+set +a
 
 SIZE="${SIZE:-$ENV}"
 STEP="${STEP:-}"
