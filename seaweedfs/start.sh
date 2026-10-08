@@ -17,5 +17,5 @@ exec /entrypoint.sh server \
   -dir=/data \
   -ip.bind=0.0.0.0 \
   -master.volumeSizeLimitMB=1024 \
-  -volume.max=0 \
+  -volume.max=60 \
   -s3 -s3.port=8333 -s3.config=/tmp/s3.json
