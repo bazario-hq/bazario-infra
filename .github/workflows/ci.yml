@@ -1,0 +1,95 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compose configuration parses for every environment
+        run: make validate
+
+  shellcheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: shellcheck
+        run: shellcheck --severity=warning scripts/*.sh seaweedfs/*.sh
+
+  monitoring:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prometheus rules and config
+        run: |
+          docker run --rm --entrypoint promtool -v "$PWD/monitoring/prometheus:/etc/prometheus:ro" \
+            prom/prometheus:v2.55.1 check rules /etc/prometheus/alerts.yml
+          docker run --rm --entrypoint promtool -v "$PWD/monitoring/prometheus:/etc/prometheus:ro" \
+            prom/prometheus:v2.55.1 check config /etc/prometheus/prometheus.yml
+      - name: Grafana dashboards are valid JSON
+        run: find monitoring/grafana -name '*.json' -print0 | xargs -0 -n1 jq empty
+
+  loadgen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: bazario
+          POSTGRES_PASSWORD: bazario
+          POSTGRES_DB: bazario
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U bazario" --health-interval 3s --health-timeout 3s --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: bazario-infra
+      - uses: actions/checkout@v4
+        with:
+          repository: bazario-hq/bazario-api
+          ref: main
+          path: bazario-api
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: bazario-api/.nvmrc
+          cache: npm
+          cache-dependency-path: bazario-api/package-lock.json
+      - uses: grafana/setup-k6-action@v1
+      - name: Generate a dev-size manifest with the API seed
+        working-directory: bazario-api
+        env:
+          DATABASE_URL: postgres://bazario:bazario@localhost:5432/bazario
+          S3_ENDPOINT: http://localhost:9000
+          S3_ACCESS_KEY: ci
+          S3_SECRET_KEY: ci
+          S3_BUCKET: ci
+        run: |
+          npm ci
+          npm run seed -- --size=dev --reset --no-images --manifest="$RUNNER_TEMP/manifest.json"
+      - name: Every scenario parses and its options resolve
+        working-directory: bazario-infra/loadgen
+        env:
+          PROFILE: ${{ github.workspace }}/bazario-infra/loadgen/profile.json
+          MANIFEST: ${{ runner.temp }}/manifest.json
+        run: |
+          for f in scenarios/*.js; do
+            echo "== $f"
+            k6 inspect -e PROFILE="$PROFILE" -e MANIFEST="$MANIFEST" "$f" > /dev/null
+          done
