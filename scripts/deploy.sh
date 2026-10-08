@@ -16,7 +16,7 @@ set_tag "$TAG"
 compose build api web
 
 echo "Running pending migrations"
-compose up -d postgres toxiproxy minio minio-init
+compose up -d postgres toxiproxy seaweedfs seaweedfs-init
 compose run --rm --no-deps api node dist/migrate.js
 
 echo "Restarting application containers"

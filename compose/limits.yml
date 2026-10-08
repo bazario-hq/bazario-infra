@@ -4,7 +4,7 @@ services:
     deploy:
       resources:
         limits: { cpus: "2.0", memory: 2g }
-  minio:
+  seaweedfs:
     deploy:
       resources:
         limits: { cpus: "0.5", memory: 512m }
