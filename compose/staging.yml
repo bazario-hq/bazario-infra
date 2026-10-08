@@ -1,0 +1,4 @@
+# staging: where QA verifies tickets after merge. Same limits as prod-sim.
+services:
+  api:
+    restart: unless-stopped

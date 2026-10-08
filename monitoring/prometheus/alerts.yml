@@ -1,0 +1,40 @@
+groups:
+  - name: bazario-api
+    rules:
+      - alert: ApiHighLatencyP95
+        expr: histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket{job="api"}[5m]))) > 1
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: "API p95 latency above 1s"
+          runbook: "docs/runbooks/api-latency.md"
+      - alert: ApiHighErrorRate
+        expr: sum(rate(http_requests_total{job="api",status=~"5.."}[5m])) / sum(rate(http_requests_total{job="api"}[5m])) > 0.02
+        for: 5m
+        labels: { severity: critical }
+        annotations:
+          summary: "API 5xx rate above 2%"
+          runbook: "docs/runbooks/api-errors.md"
+      - alert: ApiDown
+        expr: up{job="api"} == 0
+        for: 1m
+        labels: { severity: critical }
+        annotations:
+          summary: "API target is down"
+  - name: bazario-db
+    rules:
+      - alert: PostgresConnectionsHigh
+        expr: sum(pg_stat_activity_count) > 80
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: "Postgres connections above 80"
+          runbook: "docs/runbooks/db-connections.md"
+  - name: bazario-containers
+    rules:
+      - alert: ContainerMemoryNearLimit
+        expr: container_memory_working_set_bytes{name!=""} / container_spec_memory_limit_bytes{name!=""} > 0.9 and container_spec_memory_limit_bytes{name!=""} > 0
+        for: 10m
+        labels: { severity: warning }
+        annotations:
+          summary: "Container memory above 90% of limit"

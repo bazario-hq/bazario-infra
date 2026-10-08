@@ -1,0 +1,50 @@
+# Fixed CPU and memory caps, shared by staging and prod-sim so results are comparable.
+services:
+  postgres:
+    deploy:
+      resources:
+        limits: { cpus: "2.0", memory: 2g }
+  minio:
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 512m }
+  toxiproxy:
+    deploy:
+      resources:
+        limits: { cpus: "0.25", memory: 128m }
+  api:
+    deploy:
+      resources:
+        limits: { cpus: "1.0", memory: 768m }
+  web:
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 256m }
+  loadgen:
+    deploy:
+      resources:
+        limits: { cpus: "1.0", memory: 512m }
+  postgres-exporter:
+    deploy:
+      resources:
+        limits: { cpus: "0.25", memory: 128m }
+  cadvisor:
+    deploy:
+      resources:
+        limits: { cpus: "0.25", memory: 256m }
+  prometheus:
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 768m }
+  loki:
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 512m }
+  promtail:
+    deploy:
+      resources:
+        limits: { cpus: "0.25", memory: 128m }
+  grafana:
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 384m }
