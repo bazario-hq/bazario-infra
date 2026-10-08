@@ -40,7 +40,7 @@ Each environment gets a generated dataset (deterministic, so every copy of stagi
 
 `make seed` resets the database, runs migrations, loads the data, uploads generated product photos to MinIO and writes `loadgen/data/manifest.<env>.json` for the load generator. It needs the API image, so it builds it first. `make grow ENV=prod-sim STEP=1` adds a growth step (more buyers, products and recent orders) on top of the existing data.
 
-prod-sim is large (hundreds of thousands of products, millions of orders, reviews and notifications). Plan for roughly 15-30 minutes and about 7 GB of disk (database plus photos) on a laptop.
+prod-sim is large (hundreds of thousands of products, millions of orders, reviews and notifications). Plan for roughly 10-20 minutes (plus the first API image build) and about 7 GB of disk: a 5 GB database plus about 1 GB of photos, with headroom for WAL while it loads.
 
 To reset staging to a known state between QA runs:
 
