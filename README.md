@@ -1,6 +1,6 @@
 # bazario-infra
 
-Docker Compose environments, monitoring, load generator and deploy scripts for Bazario.
+Docker Compose environments, monitoring, the load generator and deploy scripts for Bazario.
 
 | Environment | Purpose | Limits |
 | --- | --- | --- |
